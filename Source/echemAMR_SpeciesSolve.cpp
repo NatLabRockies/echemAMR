@@ -131,6 +131,8 @@ void echemAMR::compute_dsdt(int lev, const int num_grow, MultiFab& Sborder,
                             Array<MultiFab,AMREX_SPACEDIM>& flux, MultiFab& dsdt,
                             Real time, Real delt, bool reflux_this_stage)
 {
+    BL_PROFILE("echemAMR::compute_dsdt()");
+
     const auto dx = geom[lev].CellSizeArray();
     auto prob_lo = geom[lev].ProbLoArray();
     auto prob_hi = geom[lev].ProbHiArray();
@@ -215,6 +217,7 @@ void echemAMR::compute_fluxes(int lev, const int num_grow, MultiFab& Sborder,
                               Array<MultiFab,AMREX_SPACEDIM>& flux, 
                               Real time, bool implicit_diffusion)
 {
+    BL_PROFILE("echemAMR::compute_fluxes()");
 
     const auto dx = geom[lev].CellSizeArray();
     auto prob_lo = geom[lev].ProbLoArray();
@@ -693,6 +696,10 @@ void echemAMR::implicit_solve_species(Real current_time,Real dt,int spec_id,
         Print()<<"max of rhs:"<<rhs[ilev].max(0)<<"\n";
         Print()<<"min of rhs:"<<rhs[ilev].min(0)<<"\n";
         amrex::MultiFab::Copy(phi_new[ilev], solution[ilev], 0, spec_id, 1, 0);
+        if(solution[ilev].min(0) < 0.0)
+        {
+           amrex::Abort("concentration solution is less than 0");
+        }
     }
     Print()<<"spec id:"<<spec_id<<"\n";
 }
