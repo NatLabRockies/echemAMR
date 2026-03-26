@@ -108,6 +108,11 @@ public:
 
     void init_volumes();
 
+    void compute_current_den(Vector<Array<MultiFab, AMREX_SPACEDIM>>& currentden,amrex::Real cur_time);
+
+    void compute_current_density_at_level(int lev,MultiFab& Sborder,
+    Array<MultiFab, AMREX_SPACEDIM>& currden,Real current_time);
+
 private:
     ////////////////
     // private member functions

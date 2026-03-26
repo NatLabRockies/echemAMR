@@ -1,130 +1,6 @@
 #include <echemAMR.H>
 #include <PostProcessing.H>
-
-void echemAMR::compute_current_den(Vector<Array<MultiFab, AMREX_SPACEDIM>>& currentden)
-{
-    int num_grow=2;
-    for(int lev=0;lev<=finest_level;lev++)
-    {
-        MultiFab Sborder(grids[lev], dmap[lev], phi_new[lev].nComp(), num_grow);
-        FillPatch(lev, cur_time, Sborder, 0, Sborder.nComp());
-        compute_current_density_at_level(lev, Sborder, currentden[lev]);
-    }
-
-    // =======================================================
-    // Average down the current at coarse fine interfaces
-    // =======================================================
-    for (int lev = finest_level; lev > 0; lev--)
-    {
-        average_down_faces(
-            amrex::GetArrOfConstPtrs(currentden[lev]),
-            amrex::GetArrOfPtrs(currentden[lev - 1]), refRatio(lev - 1),
-            Geom(lev - 1));
-    }
-    // =======================================================
-}
-
-void echemAMR::compute_current_density_at_level(
-    int lev,
-    MultiFab& Sborder,
-    Array<MultiFab, AMREX_SPACEDIM>& currden,Real current_time)
-{
-
-    const auto dx = geom[lev].CellSizeArray();
-    auto prob_lo = geom[lev].ProbLoArray();
-    auto prob_hi = geom[lev].ProbHiArray();
-    ProbParm const* localprobparm = d_prob_parm;
-    MultiFab conductivity;
-    conductivity.define(grids[lev], dmap[lev], 1, 1);
-    conductivity.setVal(1.0);
-
-    int ncomp = Sborder.nComp();
-    const int* domlo = geom[lev].Domain().loVect();
-    const int* domhi = geom[lev].Domain().hiVect();
-    int lset_id = bv_levset_id;
-    Real time=current_time;
-    int captured_kd_conc_id = kd_conc_id; //public variable
-
-    GpuArray<int, AMREX_SPACEDIM> domlo_arr = {
-        AMREX_D_DECL(domlo[0], domlo[1], domlo[2])};
-    GpuArray<int, AMREX_SPACEDIM> domhi_arr = {
-        AMREX_D_DECL(domhi[0], domhi[1], domhi[2])};
-
-#ifdef _OPENMP
-#pragma omp parallel if (Gpu::notInLaunchRegion())
-#endif
-    {
-        for (MFIter mfi(Sborder, TilingIfNotGPU()); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
-            const Box& gbx = amrex::grow(bx, 1);
-            Array4<Real> phi_arr = Sborder.array(mfi);
-            Array4<Real> conductivity_arr = conductivity.array(mfi);
-            amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) {
-                electrochem_transport::compute_potential_dcoeff(i, j, k, phi_arr, conductivity_arr, 
-                                                                prob_lo, prob_hi, dx, time, *localprobparm);
-            });
-        }
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel if (Gpu::notInLaunchRegion())
-#endif
-    {
-        for (MFIter mfi(Sborder, TilingIfNotGPU()); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
-            Array<Box, AMREX_SPACEDIM> face_boxes;
-            face_boxes[0] = mfi.nodaltilebox(0);
-#if AMREX_SPACEDIM > 1
-            face_boxes[1] = mfi.nodaltilebox(1);
-#if AMREX_SPACEDIM == 3
-            face_boxes[2] = mfi.nodaltilebox(2);
-#endif
-#endif
-            Array4<Real> sborder_arr = Sborder.array(mfi);
-            Array4<Real> conductivity_arr = conductivity.array(mfi);
-
-            GpuArray<Array4<Real>, AMREX_SPACEDIM> j_arr{AMREX_D_DECL(
-                    currden[0].array(mfi), currden[1].array(mfi),
-                    currden[2].array(mfi))};
-
-            for (int idim = 0; idim < AMREX_SPACEDIM; idim++)
-            {
-                amrex::ParallelFor(
-                    face_boxes[idim],
-                    [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                        IntVect face{AMREX_D_DECL(i, j, k)};
-                        IntVect lcell{AMREX_D_DECL(i, j, k)};
-                        IntVect rcell{AMREX_D_DECL(i, j, k)};
-                        lcell[idim] -= 1;
-
-                        j_arr[idim](face) = 0.0;
-
-                        int ls_L = int(sborder_arr(lcell,lset_id));
-                        int ls_R = int(sborder_arr(rcell,lset_id));
-
-                        int regular_interface=ls_L*ls_R + (!ls_L)*(!ls_R);
-
-                        if(regular_interface)
-                        {
-                            Real efield=-(sborder_arr(rcell,POT_ID)-sborder_arr(lcell,POT_ID))/dx[idim];
-                            j_arr[idim](face) += 0.5*(conductivity_arr(lcell)+conductivity_arr(rcell))*efield;
-
-                            amrex::Real kdstar = electrochem_transport::compute_kdstar_atface(i, j, k, idim,
-                                                                                              phi_arr, prob_lo, 
-                                                                                              prob_hi, dx, time, 
-                                                                                              *localprobparm);
-
-                            j_arr[idim](face) += kdstar*(phi_arr(rcell,captured_kd_conc_id)
-                                                         -phi_arr(lcell,captured_kd_conc_id))/dx[idim];
-                        }
-
-                    });
-            }
-        }
-    }
-}
+#include <Transport.H>
 
 // advance solution to final time
 void echemAMR::Evolve()
@@ -153,7 +29,7 @@ void echemAMR::Evolve()
 
     if(buttler_vohlmer_flux)
     {
-        compute_current_den(currentden);
+        compute_current_den(currentden,cur_time);
     }
 
     if(update_species_interface)
@@ -185,6 +61,11 @@ void echemAMR::Evolve()
             solve_potential(cur_time);
         }
         potsolve_time += amrex::second();
+        
+        if(buttler_vohlmer_flux)
+        {
+            compute_current_den(currentden,cur_time);
+        }
 
         amrex::Real specsolve_time = -amrex::second();
         if(!species_implicit_solve)
@@ -231,54 +112,7 @@ void echemAMR::Evolve()
                 FillPatch(lev, cur_time, Sborder, 0, Sborder.nComp());
                 compute_fluxes(lev, num_grow, Sborder, flux[lev], cur_time, true);
             }
-            
-            //current coupling terms
-            for(int lev=0;lev<=finest_level;lev++)
-            {
-                const auto dx = geom[lev].CellSizeArray();
-                auto prob_lo = geom[lev].ProbLoArray();
-                auto prob_hi = geom[lev].ProbHiArray();
-                MultiFab Sborder(grids[lev], dmap[lev], phi_new[lev].nComp(), num_grow);
-                FillPatch(lev, cur_time, Sborder, 0, Sborder.nComp());
-                Real time=cur_time;
 
-                for (MFIter mfi(phi_new[lev], TilingIfNotGPU()); mfi.isValid(); ++mfi)
-                {
-                    const Box& bx = mfi.tilebox();
-                    Array<Box, AMREX_SPACEDIM> face_boxes;
-                    face_boxes[0] = mfi.nodaltilebox(0);
-#if AMREX_SPACEDIM > 1
-                    face_boxes[1] = mfi.nodaltilebox(1);
-#if AMREX_SPACEDIM == 3
-                    face_boxes[2] = mfi.nodaltilebox(2);
-#endif
-#endif
-                    Array4<Real> phi_arr = Sborder.array(mfi);
-
-                    GpuArray<Array4<Real>, AMREX_SPACEDIM> j_arr{AMREX_D_DECL(
-                            currden[0].array(mfi), currden[1].array(mfi),
-                            currden[2].array(mfi))};
-
-                    GpuArray<Array4<Real>, AMREX_SPACEDIM> flux_arr{AMREX_D_DECL(
-                            flux[0].array(mfi), flux[1].array(mfi),
-                            flux[2].array(mfi))};
-
-                    for (int idim = 0; idim < AMREX_SPACEDIM; idim++)
-                    {
-                        amrex::ParallelFor(
-                            face_boxes[idim],
-                            [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                                IntVect face{AMREX_D_DECL(i, j, k)};
-                                Real fluxfac=electrochem_transport::concentration_flux_factor(face, idim,
-                                                                                              phi_arr, prob_lo,
-                                                                                              prob_hi, dx, time,
-                                                                                              *localprobparm);
-
-                                flux_arr[idim](face) += j_arr[idim](face)*fluxfac;
-                            });
-                    }
-                }
-            }
 
             // =======================================================
             // Average down the fluxes before using them to update phi
@@ -299,7 +133,66 @@ void echemAMR::Evolve()
                 FillPatch(lev, cur_time, Sborder, 0, Sborder.nComp());
                 compute_dsdt(lev, num_grow, Sborder,flux[lev], expl_src[lev], 
                              cur_time, dt[0], false);
+
+                //current coupling terms
+                if(buttler_vohlmer_flux)
+                {
+                    const auto dx = geom[lev].CellSizeArray();
+                    int lset_id = bv_levset_id;
+                    int captured_kd_conc_id = kd_conc_id; //public variable
+
+                    for (MFIter mfi(phi_new[lev], TilingIfNotGPU()); mfi.isValid(); ++mfi)
+                    {
+                        const Box& bx = mfi.tilebox();
+                        Array4<Real> sborder_arr = Sborder.array(mfi);
+                        Array4<Real> explsrc_arr = expl_src[lev].array(mfi);
+
+                        GpuArray<Array4<Real>, AMREX_SPACEDIM> j_arr{AMREX_D_DECL(
+                                currentden[lev][0].array(mfi), currentden[lev][1].array(mfi),
+                                currentden[lev][2].array(mfi))};
+
+                        amrex::ParallelFor(
+                            bx,[=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+                                IntVect cellid{AMREX_D_DECL(i, j, k)};
+                                Real jbyF_dot_gradtplus=0.0;
+
+                                if(sborder_arr(cellid,lset_id)==1) //only electrolyte
+                                {
+                                    for (int idim = 0; idim < AMREX_SPACEDIM; idim++)
+                                    {
+                                        // left,right,top,bottom,front,back
+                                        for (int f = 0; f < 2; f++)
+                                        {
+                                            IntVect face{AMREX_D_DECL(i, j, k)};
+                                            face[idim] += f;
+                                            IntVect lcell{AMREX_D_DECL(face[0], face[1], face[2])};
+                                            IntVect rcell{AMREX_D_DECL(face[0], face[1], face[2])};
+                                            lcell[idim] -= 1;
+
+                                            Real tplus_l=electrochem_transport::get_tplus(lcell,sborder_arr,*localprobparm);
+                                            Real tplus_r=electrochem_transport::get_tplus(rcell,sborder_arr,*localprobparm);
+
+                                            jbyF_dot_gradtplus+=(j_arr[idim](face)/FARADCONST)*(tplus_r-tplus_l)/dx[idim];
+                                        }
+                                    }
+                                    jbyF_dot_gradtplus*=0.5;
+                                }
+
+                                //dc/dt + del.N=0
+                                //N=-De grad(c) + t+/F j
+                                //del.N= del(-De grad(c))+del.(t+/F j)
+                                //del.N=del(-De grad(c))+(t+/F)del.j+j/F.grad(t+)
+                                //since del.j is 0
+                                //del.N = del(-De grad(c))+j/F.grad(t+)
+                                //the second term goes to the right hand side, so use minus
+                                explsrc_arr(cellid,kd_conc_id) -= jbyF_dot_gradtplus;
+
+                            });
+                    }
+                }
             }
+
 
             for(unsigned int ind=0;ind<transported_species_list.size();ind++)
             {
