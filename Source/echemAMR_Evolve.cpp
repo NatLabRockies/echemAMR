@@ -191,6 +191,9 @@ void echemAMR::Evolve()
                             });
                     }
                 }
+
+                amrex::Print()<<"max of explicit src:"<<expl_src[lev].max(kd_conc_id,0,false)<<"\n";
+                amrex::Print()<<"min of explicit src:"<<expl_src[lev].min(kd_conc_id,0,false)<<"\n";
             }
 
 

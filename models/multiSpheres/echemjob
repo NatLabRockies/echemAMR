@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --nodes=2           
+#SBATCH --ntasks-per-node=64      
+#SBATCH --time=48:00:00             
+#SBATCH --account=biocon 
+#SBATCH --job-name=liion
+#SBATCH --output=job_output_filename.%j.out  # %j will be replaced with the job ID
+#SBATCH --partition=standard
+#SBATCH --qos=high
+
+module load PrgEnv-gnu
+srun -n 128 ./*.ex inputs

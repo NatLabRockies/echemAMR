@@ -228,6 +228,10 @@ private:
     int interface_update_iters=-1;
     int update_species_interface=0;
 
+    int bound_specden=0;
+    amrex::Real min_specden=0.0; //mol/m3
+    amrex::Real max_specden=1e8; //mol/m3
+
     // by default no relaxation for
     // BV poisson solves
     amrex::Real bv_relaxfac = 0.0;

@@ -328,6 +328,9 @@ void echemAMR::ReadParameters()
         {
             amrex::Abort("Cannot use fixed timestep with explicit subcycled solve\n");
         }
+        pp.query("bound_specden",bound_specden);
+        pp.query("min_specden",min_specden);
+        pp.query("max_specden",max_specden);
     }
 }
 
