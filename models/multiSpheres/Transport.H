@@ -124,10 +124,9 @@ namespace electrochem_transport {
         Real C = phi(i, j, k, CO_ID);
         // Diffusion coefficient = sum( diffusion_coefficient domain i * levelset i), with levelset i=1 if x within domain i, 0 otherwise
         dcoeff(i,j,k,CO_ID) = electrochem::Ds_bulk_anode(C, prob_parm) * phi(i,j,k,A_AM_ID)
-        + electrochem::Ds_bulk_cathode(C, prob_parm) * phi(i,j,k,C_AM_ID)
-        + electrochem::Ds_bulk_CBD(prob_parm) * (phi(i,j,k,A_CBD_ID)+phi(i,j,k,C_CBD_ID));
+        + electrochem::Ds_bulk_cathode(C, prob_parm) * phi(i,j,k,C_AM_ID);
 
-        dcoeff(i,j,k,CO_ID) = dcoeff(i,j,k,CO_ID) + (electrochem::De_bulk(C, prob_parm)/phi(i,j,k,MAC_ID)) * phi(i,j,k,LS_ID);
+        dcoeff(i,j,k,CO_ID) = dcoeff(i,j,k,CO_ID) + (electrochem::De_bulk(C, prob_parm)/phi(i,j,k,MAC_ID)/phi(i,j,k,NP_ID)) * phi(i,j,k,LS_ID);
 
     }
 
@@ -143,7 +142,7 @@ namespace electrochem_transport {
             ecoeff(i, j, k, c) = 1.0;
         }
         // set the nanoporosity per cell
-        ecoeff(i, j, k, CO_ID) = (
+        /*ecoeff(i, j, k, CO_ID) = (
             phi(i, j, k, A_AM_ID)  * phi(i,j,k,NP_ID)
             + phi(i, j, k, A_E_ID)   * phi(i,j,k,NP_ID)
             + phi(i, j, k, A_CBD_ID) * phi(i,j,k,NP_ID)
@@ -151,7 +150,7 @@ namespace electrochem_transport {
             + phi(i, j, k, C_AM_ID)  * phi(i,j,k,NP_ID)
             + phi(i, j, k, C_E_ID)   * phi(i,j,k,NP_ID)
             + phi(i, j, k, C_CBD_ID) * phi(i,j,k,NP_ID)
-            );
+            );*/
     }
 
     AMREX_GPU_DEVICE AMREX_INLINE void compute_vel(

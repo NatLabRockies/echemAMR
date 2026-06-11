@@ -1,6 +1,6 @@
 #output_folder = Res/OneSphere/
 max_step  = 100000000
-stop_time = 3000.0
+stop_time = 3600.0
 
 #------------------------
 # PROBLEM SIZE & GEOMETRY
@@ -12,8 +12,8 @@ geometry.prob_lo     =  0.0   0.0    0.0
 prob.geometry_filename = "Geometry/FullCell_FenicsArticle.txt"
 prob.nanoporosity_filename = "Geometry/FullCell_FenicsArticle_nanoporosity.txt"
 prob.macmullin_filename = "Geometry/FullCell_FenicsArticle_macmullin.txt"
-geometry.prob_hi     =  200e-6 70e-6 70e-6 # [m]
-amr.n_cell           =  384 96 96
+geometry.prob_hi     =  155.8e-6 97.6e-6 97.6e-6 # [m]
+amr.n_cell           =  320 200 200
 
 # VERBOSITY
 amr.v              = 1       # verbosity in Amr
@@ -30,7 +30,7 @@ amr.line_plot_npoints = 90 # Number of point along the line
 
 # TIME STEP CONTROL
 echemamr.cfl            = 0.8 # 0.8   
-echemamr.dtmin=1.0
+echemamr.dtmin=2.0
 echemamr.dtgpfactor=1.0
 echemamr.fixed_timestep=1
 echemamr.dtmax=5.0
@@ -67,7 +67,7 @@ echemamr.levelset_refinegrad = 0.2
 echemamr.buttler_vohlmer_flux=1
 echemamr.bv_species_id =0
 echemamr.bv_levelset_id=11 
-echemamr.bv_nonlinear_iters=15 # 100
+echemamr.bv_nonlinear_iters=10 # 100
 
 echemamr.bv_nonlinear_reltol=1e-7 # default 1e-11
 echemamr.bv_nonlinear_abstol=1e-18 # Set arbitrarily low
@@ -81,11 +81,11 @@ echemamr.use_hypre=1
 
 # PLOTFILES
 amr.plot_file  = plt    # root name of plot file
-amr.plot_int   = 1   # number of timesteps between plot files
+amr.plot_int   = 10   # number of timesteps between plot files
 
 # CHECKPOINT
 amr.chk_file = chk      # root name of checkpoint file
-amr.chk_int  = -1       # number of timesteps between checkpoint files
+amr.chk_int  = 10       # number of timesteps between checkpoint files
 
 echemamr.hypre.hypre_solver=GMRES
 echemamr.hypre.hypre_preconditioner=BoomerAMG
@@ -112,10 +112,10 @@ prob.mater_anode = 2
 prob.mater_electrolyte = 2
 prob.mater_electrolyte_tpAc = 2
 # Specific surface area correction due to voxel discretization (1: no correction, 2/3: sphere)
-prob.Sp_corr_anode = 0.6667
-prob.Sp_corr_cathode = 0.6667
-#prob.Sp_corr_anode = 1.0
-#prob.Sp_corr_cathode = 1.0
+#prob.Sp_corr_anode = 0.6667
+#prob.Sp_corr_cathode = 0.6667
+prob.Sp_corr_anode = 1.0
+prob.Sp_corr_cathode = 1.0
 
 # Carbon black binder
 prob.mater_CBD = 1
@@ -124,8 +124,8 @@ prob.mater_CBD = 1
 #                                      i.e., no modifications from bulk coefficients and electrolyte mass conservation = elctrolyte concentration conservation
 #                                    = 1: use txt files
 #                                      i.e., modifications from bulk coefficients and electrolyte mass conservation = elctrolyte concentration*nanoporosity conservation
-prob.Nanoscale_coefficients_txtimport_separator = 0
-prob.Nanoscale_coefficients_txtimport_CBD = 0 # Both anode and cathode side
+prob.Nanoscale_coefficients_txtimport_separator = 1
+prob.Nanoscale_coefficients_txtimport_CBD = 1 # Both anode and cathode side
 # CBD_transport = 0: only transport e- (solid potential), i.e., pure solid phase.
 #                 BC: same as active material but only for applied loading
 #               = 1: transport e- (solid potential) and Li+ (electrolyte concentration), i.e., a mixed phase with nanoporosity
@@ -154,14 +154,12 @@ prob.zeroDmodel = 0
 # -------
 # PHYSICS
 # -------
-# Electrolyte concentration-potential coupling
-prob.Cphi_electrolyte_coupling = 0
 
 #---------------
 # INITIALIZATION
 #---------------
 prob.ce_atrest=1200 # [mol.m-3] Electrolyte initial concentration in both separator and electrodes 
-prob.soc_anode_t0=0.1 # [] Initial state of charge for the solid anode (ratio of cs,max). Must be between anode_soc_min and anode_soc_max.
+prob.soc_anode_t0=0.05 # [] Initial state of charge for the solid anode (ratio of cs,max). Must be between anode_soc_min and anode_soc_max.
 prob.soc_cathode_t0=0.9 # [] Initial state of charge for the solid cathode (ratio of cs,max). Must be between cathode_soc_min and cathode_soc_max.
 prob.phi_reference=0.0 # [V] Arbitrary value
 
@@ -169,9 +167,9 @@ prob.phi_reference=0.0 # [V] Arbitrary value
 # LOADING
 # -------
 prob.Crate=1.0 # []
-prob.Temperature = 300.0 # [K]. Assumed uniform and constant.
+prob.Temperature = 303.15 # [K]. Assumed uniform and constant.
 prob.Cphi_electrolyte_coupling=1
 echemamr.potential_solve_init=1
 echemamr.bound_specden=1
 echemamr.min_specden=500
-echemamr.max_specden=45000
+echemamr.max_specden=50000

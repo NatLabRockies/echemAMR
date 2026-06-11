@@ -8,6 +8,19 @@
 
 using namespace amrex;
 namespace electrochem_transport {
+    
+    AMREX_GPU_DEVICE AMREX_INLINE
+    Real get_tplus(IntVect cellid,Array4<Real> const& phi,
+                   ProbParm const& prob_parm)
+    {
+        Real tplus=0.0;
+        if(phi(cellid,LS_ID)==1)
+        {
+            tplus  = electrochem::t_plus(phi(cellid,CO_ID), prob_parm);
+        }
+        return(tplus);      
+    }
+    
     AMREX_GPU_DEVICE AMREX_INLINE
     void potential_mixedbc(int i, int j, int k,
                            int dir, int sgn,
@@ -311,6 +324,14 @@ namespace electrochem_transport {
         }
 
         return(kdstar);
+    }
+    
+    AMREX_GPU_DEVICE AMREX_INLINE
+    Real get_tplus(IntVect cellid,Array4<Real> const& phi,
+                   ProbParm const& prob_parm)
+    {
+        Real tplus=0.0;
+        return(tplus);      
     }
 }
 #endif

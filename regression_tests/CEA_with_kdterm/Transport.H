@@ -171,6 +171,14 @@ namespace electrochem_transport {
        
         return(kdstar);
     }
+    
+    AMREX_GPU_DEVICE AMREX_INLINE
+    Real get_tplus(IntVect cellid,Array4<Real> const& phi,
+                   ProbParm const& prob_parm)
+    {
+        Real tplus=0.0;
+        return(tplus);      
+    }
 
 } // namespace electrochem_transport
 #endif

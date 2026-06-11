@@ -34,6 +34,20 @@ built following these instructions - https://amrex-codes.github.io/amrex/docs_ht
 * These plot files can be open usine AMReX grid reader in ParaView (see https://amrex-codes.github.io/amrex/docs_html/Visualization.html#paraview)
 * Alternatively yt or visit can also be used. see https://amrex-codes.github.io/amrex/docs_html/Visualization_Chapter.html
 
+# Citation
+
+To cite echemAMR, use our computer physics communications paper:
+```
+@article{sitaraman2026immersed,
+  title={An immersed interface method for microstructure-scale electrochemical battery models: numerical formulation and performance portable implementation},
+  author={Sitaraman, Hariswaran and Allen, Jeffery and Brazell, Michael and Usseglio-Viretta, Francois},
+  journal={Computer Physics Communications},
+  pages={110241},
+  year={2026},
+  publisher={Elsevier}
+}
+```
+
 # Acknowledgments
 
-This work was authored by the National Renewable Energy Laboratory (NREL) under software record SWR-23-111, operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE Laboratory Directed Research and Development (LDRD). The research was performed using computational resources sponsored by the Department of Energy's Office of Energy Efficiency and Renewable Energy and located at the National Renewable Energy Laboratory. 
+This work was authored by the National Laboratory of The Rockies (NLR) under software record SWR-23-111, operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE Laboratory Directed Research and Development (LDRD). The research was performed using computational resources sponsored by the Department of Energy's Office of Energy Efficiency and Renewable Energy and located at the National Renewable Energy Laboratory. 
