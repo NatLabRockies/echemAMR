@@ -24,6 +24,7 @@ jobs:
     - name: Build Regression
       working-directory: ./regression_tests
       run: |
+        source ../set_echemamr_paths.sh 
         cd DriftDiffuse1d
         make -j 2 COMP=gnu
         cd ..
@@ -38,11 +39,13 @@ jobs:
     - name: Build Models
       working-directory: ./models
       run: |
+        source ../set_echemamr_paths.sh
         cd Microstructure
         make -j 2 COMP=gnu DEBUG=FALSE
     - name: Run Regression
       working-directory: ./regression_tests
       run: |
+          source ../set_echemamr_paths.sh
           cd DriftDiffuse1d
           mpirun -n 1 ./echemAMR3d.gnu.MPI.ex inputs_x
           mpirun -n 1 ./echemAMR3d.gnu.MPI.ex inputs_y
@@ -65,6 +68,7 @@ jobs:
     - name: Run Model
       working-directory: ./models
       run: |
+          source ../set_echemamr_paths.sh
           cd Microstructure
           mpirun -n 1 ./echemAMR3d.gnu.TPROF.MPI.ex inputs_CESEA_case1
   GPU-Nvidia:
@@ -109,6 +113,7 @@ jobs:
       - name: build case
         working-directory: ./models
         run: |
+          source ../set_echemamr_paths.sh
           export PATH=/usr/local/nvidia/bin:/usr/local/cuda-12.6/bin:${PATH}
           export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda-12.6/lib:${LD_LIBRARY_PATH}
           ccache -z

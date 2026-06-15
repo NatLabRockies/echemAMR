@@ -20,9 +20,12 @@ parallel execution capabilities on current and upcoming high-performance-computi
 built following these instructions - https://amrex-codes.github.io/amrex/docs_html/LinearSolvers.html#external-solvers
 It is best to build hypre in the `echemAMR` folder itself as several test cases have `HYPRE_DIR` set to relative path within the
 parent folder
+* First run the set_echemamr_paths.sh as `bash set_echemamr_paths.sh` from the `echemAMR` directory
+* go to any of the test cases in tests or model folder (e.g. cd regression_tests/CEAcharging)
 * Each simulation case needs to be built by linking problem specific c++ files with the main source code.
   Go to any of the test cases in `regression_tests` or `models` folder (e.g. cd regression_tests/CEAcharging) and follow the `README` file
-* build executable using the GNUMakefile - do $make for CPU build or do $make USE_CUDA=TRUE for GPU build
+* build executable using the GNUMakefile - do `$make -j` for CPU build or do `$make -j USE_CUDA=TRUE` for GPU build
+* if using hypre with gpu, you need a gpu build of hypre. Do install following the instructions here (https://amrex-codes.github.io/amrex/docs_html/LinearSolvers.html#external-solvers) and have HYPRE_DIR point to this build before echemAMR compilation.
 
 # Run instructions
 
@@ -39,6 +42,20 @@ parent folder
 * Alternatively `yt` or `visit` can also be used. see https://amrex-codes.github.io/amrex/docs_html/Visualization_Chapter.html
 * Most of the cases in `regression_tests` use `yt` and `gnuplot` for post-processing and plotting purposes
 
+# Citation
+
+To cite echemAMR, use our computer physics communications paper:
+```
+@article{sitaraman2026immersed,
+  title={An immersed interface method for microstructure-scale electrochemical battery models: numerical formulation and performance portable implementation},
+  author={Sitaraman, Hariswaran and Allen, Jeffery and Brazell, Michael and Usseglio-Viretta, Francois},
+  journal={Computer Physics Communications},
+  pages={110241},
+  year={2026},
+  publisher={Elsevier}
+}
+```
+
 # Acknowledgments
 
-This work was authored by the National Renewable Energy Laboratory (NREL) under software record SWR-23-111, operated by Alliance for Sustainable Energy, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE Laboratory Directed Research and Development (LDRD). The research was performed using computational resources sponsored by the Department of Energy's Office of Energy Efficiency and Renewable Energy and located at the National Renewable Energy Laboratory. 
+This work was authored by the National Laboratory of The Rockies (NLR) under software record SWR-23-111, operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE Laboratory Directed Research and Development (LDRD). The research was performed using computational resources sponsored by the Department of Energy's Office of Critical Minerals and Energy Innovation and located at the National Laboratory of The Rockies. 

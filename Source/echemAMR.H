@@ -108,6 +108,11 @@ public:
 
     void init_volumes();
 
+    void compute_current_den(Vector<Array<MultiFab, AMREX_SPACEDIM>>& currentden,amrex::Real cur_time);
+
+    void compute_current_density_at_level(int lev,MultiFab& Sborder,
+    Array<MultiFab, AMREX_SPACEDIM>& currden,Real current_time);
+
 private:
     ////////////////
     // private member functions
@@ -222,6 +227,10 @@ private:
     int fixed_timestep=0;
     int interface_update_iters=-1;
     int update_species_interface=0;
+
+    int bound_specden=0;
+    amrex::Real min_specden=0.0; //mol/m3
+    amrex::Real max_specden=1e8; //mol/m3
 
     // by default no relaxation for
     // BV poisson solves

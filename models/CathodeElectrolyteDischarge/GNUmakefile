@@ -16,10 +16,9 @@ USE_MPI    = TRUE
 USE_OMP    = FALSE 
 USE_CUDA   = FALSE
 USE_HYPRE  = TRUE
-
 Bpack   := ./Make.package 
 Blocs   := . 
 
-HYPRE_DIR=../../hypre/src/hypre/
+HYPRE_DIR?=../../hypre/src/hypre
 
-include ../Make.echemAMR
+include ${ECHEM_DIR}/Make.echemAMR

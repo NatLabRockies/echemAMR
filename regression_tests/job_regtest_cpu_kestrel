@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=32
 #SBATCH --time=01:00:00
-#SBATCH --account=extrubatt
+#SBATCH --account=sams
 #SBATCH --output=regout
 #SBATCH --error=regerr
 
@@ -15,8 +15,7 @@ mkdir ${REGTEST_FOLDER}
 module purge
 module load PrgEnv-gnu
 #source ~/loadcuda.sh
-export ECHEM_DIR=/home/hsitaram/codes/echemAMR
-#export AMREX_HOME=/home/hsitaram/gitrepos/ECP_codes/amrex
+source ../set_echemamr_paths.sh
 REGTEST_FOLDER=${TOPDIR}/$(date '+%d_%b_%Y_%H')
 . ./script_reg_testing.sh 16 srun ~/harienv.sh ${REGTEST_FOLDER}/results COMP=gnu
 

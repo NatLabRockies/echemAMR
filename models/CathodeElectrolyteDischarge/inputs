@@ -1,4 +1,4 @@
-max_step  = 200
+max_step  = 5
 stop_time = 30000.0
 
 # PROBLEM SIZE & GEOMETRY
@@ -6,7 +6,7 @@ geometry.is_periodic =  0  0  0
 geometry.coord_sys   =  0       # 0 => cart
 geometry.prob_lo     =  0.0  0.0    0.0 
 geometry.prob_hi     =  1e-4  0.5e-4  0.5e-4
-amr.n_cell           =  32   16    16
+amr.n_cell           =  128   64   64
 
 # VERBOSITY
 amr.v              = 1       # verbosity in Amr
@@ -14,7 +14,7 @@ amr.v              = 1       # verbosity in Amr
 # REFINEMENT
 amr.max_level       = 0       # maximum level number allowed
 amr.blocking_factor = 2       # block factor in grid generation
-amr.max_grid_size   = 8
+amr.max_grid_size   = 4096
 
 amr.regrid_int      = 2       # how often to regrid
 
@@ -66,34 +66,10 @@ echemamr.hypre.hypre_solver=GMRES
 echemamr.hypre.hypre_preconditioner=BoomerAMG
 echemamr.bv_relaxation_factor=1e6 
 
-echemamr.hypre.num_krylov = 200
-echemamr.hypre.max_iterations = 200
 echemamr.hypre.bamg_verbose = 0
-echemamr.hypre.bamg_coarsen_type = 8
-echemamr.hypre.bamg_interp_type = 6
-echemamr.hypre.bamg_relax_type = 11
-echemamr.hypre.bamg_num_sweeps = 2
-echemamr.hypre.bamg_cycle_type = 1
-echemamr.hypre.bamg_relax_order = 0
-echemamr.hypre.bamg_keep_transpose = 1
-echemamr.hypre.bamg_trunc_factor = 0.44351885396256086
-echemamr.hypre.bamg_strong_threshold = 0.30015419030906665
-echemamr.hypre.bamg_pmax_elmts = 4
-
-echemamr.hypre.bamg_agg_num_levels = 3
-echemamr.hypre.bamg_agg_interp_type = 5
-echemamr.hypre.bamg_agg_pmax_elmts = 5
-
-echemamr.hypre.bamg_smooth_type = 5
-echemamr.hypre.bamg_smooth_num_sweeps = 1
-echemamr.hypre.bamg_smooth_num_levels = 1
-echemamr.hypre.bamg_ilu_type = 0
-echemamr.hypre.bamg_ilu_level = 0
-echemamr.hypre.bamg_ilu_max_iter = 1
-echemamr.hypre.bamg_ilu_reordering_type = 0
-echemamr.hypre.bamg_ilu_tri_solve = 0
-echemamr.hypre.bamg_ilu_lower_jacobi_iters = 13
-echemamr.hypre.bamg_ilu_upper_jacobi_iters = 5
+echemamr.hypre.bamg_coarsen_type = 9
+echemamr.hypre.bamg_interp_type = 4
+echemamr.hypre.bamg_relax_type = 7
 
 echemamr.species_implicit_solve=1
 
@@ -102,9 +78,9 @@ prob.spltcell_x=1
 prob.spltcell_y=1
 prob.spltcell_z=1
 prob.electrode_conductivity=30
-prob.electrolyte_conductivity=10
-prob.electrode_dcoeff=1e-7
-prob.electrolyte_dcoeff=1e-7
+prob.electrolyte_conductivity=20
+prob.electrode_dcoeff=1e-10
+prob.electrolyte_dcoeff=1e-10
 
 # PLOTFILES
 amr.plot_file  = plt    # root name of plot file

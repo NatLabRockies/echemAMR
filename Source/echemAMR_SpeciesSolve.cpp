@@ -131,6 +131,8 @@ void echemAMR::compute_dsdt(int lev, const int num_grow, MultiFab& Sborder,
                             Array<MultiFab,AMREX_SPACEDIM>& flux, MultiFab& dsdt,
                             Real time, Real delt, bool reflux_this_stage)
 {
+    BL_PROFILE("echemAMR::compute_dsdt()");
+
     const auto dx = geom[lev].CellSizeArray();
     auto prob_lo = geom[lev].ProbLoArray();
     auto prob_hi = geom[lev].ProbHiArray();
@@ -215,6 +217,7 @@ void echemAMR::compute_fluxes(int lev, const int num_grow, MultiFab& Sborder,
                               Array<MultiFab,AMREX_SPACEDIM>& flux, 
                               Real time, bool implicit_diffusion)
 {
+    BL_PROFILE("echemAMR::compute_fluxes()");
 
     const auto dx = geom[lev].CellSizeArray();
     auto prob_lo = geom[lev].ProbLoArray();
@@ -688,11 +691,37 @@ void echemAMR::implicit_solve_species(Real current_time,Real dt,int spec_id,
     // copy solution back to phi_new
     for (int ilev = 0; ilev <= finest_level; ilev++)
     {
+        if(bound_specden)
+        {
+            for (MFIter mfi(solution[ilev], TilingIfNotGPU()); mfi.isValid(); ++mfi)
+            {
+                const Box& bx = mfi.tilebox();
+                amrex::Real specdenmin=min_specden; //private variable capture
+                amrex::Real specdenmax=max_specden; //private variable capture
+                Array4<Real> soln_arr = solution[ilev].array(mfi);
+                amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) {
+
+                    if(soln_arr(i,j,k,0) < specdenmin)
+                    {
+                        soln_arr(i,j,k,0)=specdenmin;
+                    }   
+                    if(soln_arr(i,j,k,0) > specdenmax)
+                    {
+                        soln_arr(i,j,k,0)=specdenmax;
+                    }   
+                });
+            }
+        }
         Print()<<"max of solution:"<<solution[ilev].max(0)<<"\n";
         Print()<<"min of solution:"<<solution[ilev].min(0)<<"\n";
         Print()<<"max of rhs:"<<rhs[ilev].max(0)<<"\n";
         Print()<<"min of rhs:"<<rhs[ilev].min(0)<<"\n";
         amrex::MultiFab::Copy(phi_new[ilev], solution[ilev], 0, spec_id, 1, 0);
+        
+        if(solution[ilev].min(0) < 0.0)
+        {
+            amrex::Abort("concentration solution is less than 0");
+        }
     }
     Print()<<"spec id:"<<spec_id<<"\n";
 }
