@@ -186,7 +186,7 @@ void echemAMR::Evolve()
                                 //since del.j is 0
                                 //del.N = del(-De grad(c))+j/F.grad(t+)
                                 //the second term goes to the right hand side, so use minus
-                                explsrc_arr(cellid,kd_conc_id) -= jbyF_dot_gradtplus;
+                                explsrc_arr(cellid,captured_kd_conc_id) -= jbyF_dot_gradtplus;
 
                             });
                     }

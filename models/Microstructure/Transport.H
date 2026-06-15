@@ -8,7 +8,7 @@
 
 using namespace amrex;
 namespace electrochem_transport {
-    
+
     AMREX_GPU_DEVICE AMREX_INLINE
     Real get_tplus(IntVect cellid,Array4<Real> const& phi,
                    ProbParm const& prob_parm)
@@ -20,7 +20,7 @@ namespace electrochem_transport {
         }
         return(tplus);      
     }
-    
+
     AMREX_GPU_DEVICE AMREX_INLINE
     void potential_mixedbc(int i, int j, int k,
                            int dir, int sgn,
@@ -116,7 +116,7 @@ namespace electrochem_transport {
     {
         for(int c=0;c<NVAR;c++)
         {
-           dcoeff(i, j, k, c) = 0.0;
+            dcoeff(i, j, k, c) = 0.0;
         }
 
         // Concentration
@@ -126,34 +126,7 @@ namespace electrochem_transport {
         + electrochem::Ds_bulk_cathode(C, prob_parm) * phi(i,j,k,C_AM_ID)
         + electrochem::Ds_bulk_CBD(prob_parm) * (phi(i,j,k,A_CBD_ID)+phi(i,j,k,C_CBD_ID));
 
-        if (electrochem::Cphi_ele_coupling(prob_parm)==1) 
-        {
-            //species flux Ne = -De grad(c) + t+/F je
-            //je=(-Ke grad(phi) + Kd grad(lnc))
-            //Electric field E = -grad(phi)
-            //Kdstar = Kd/c
-
-            //species flux Ne = -De grad(c) + t+/F (Ke*E + Kdstar grad(c))
-            //species flux Ne = -(De - (t+/F) Kdstar) grad(c) + t+/F Ke*E
-            //conservation equation is dce/dt + del.Ne = 0
-            //substituting..
-            //dce/dt + del.(t+/F Ke E) = del.((De - (t+/F) Kdstar) grad(c))
-            //compare to dce/dt + del. (v C) = del.(Deff grad(c))
-            //v = (t+/F)(Ke/C)E
-            //Deff = (De - (t+/F) Kdstar)
-
-            // Intermediate coefficient
-            Real Ke  =  electrochem::Ke_bulk(C, prob_parm) * phi(i,j,k,LS_ID) / phi(i,j,k,MAC_ID);
-            Real Ac  = electrochem::A_c(C, prob_parm) * phi(i,j,k,LS_ID);
-            Real tplus  = electrochem::t_plus(C, prob_parm) * phi(i,j,k,LS_ID);      
-            // Diffusional conductivity
-            Real KDe  = electrochem::Kd(Ke, Ac, tplus, prob_parm) * phi(i,j,k,LS_ID);  
-            dcoeff(i,j,k,CO_ID) = dcoeff(i,j,k,CO_ID) + (electrochem::De_bulk(C, prob_parm)/phi(i,j,k,MAC_ID) - tplus/FARADCONST*KDe/C) * phi(i,j,k,LS_ID);
-        } 
-        else 
-        {
-            dcoeff(i,j,k,CO_ID) = dcoeff(i,j,k,CO_ID) + (electrochem::De_bulk(C, prob_parm)/phi(i,j,k,MAC_ID)) * phi(i,j,k,LS_ID);
-        }        
+        dcoeff(i,j,k,CO_ID) = dcoeff(i,j,k,CO_ID) + (electrochem::De_bulk(C, prob_parm)/phi(i,j,k,MAC_ID)) * phi(i,j,k,LS_ID);
 
     }
 
@@ -166,7 +139,7 @@ namespace electrochem_transport {
     {
         for(int c=0;c<NVAR;c++)
         {
-           ecoeff(i, j, k, c) = 1.0;
+            ecoeff(i, j, k, c) = 1.0;
         }
         // set the nanoporosity per cell
         ecoeff(i, j, k, CO_ID) = (
@@ -196,40 +169,6 @@ namespace electrochem_transport {
         for (int c = 0; c < NVAR; ++c)
         {
             vel(i, j, k, c) = 0.0;
-        }
-
-        if (electrochem::Cphi_ele_coupling(prob_parm)==1) 
-        {
-            // Intermediate coefficient
-            IntVect cellid(i, j, k);
-
-            Real C = phi(cellid, CO_ID);
-            Real ls = phi(cellid,LS_ID);
-
-            //has electrolyte
-            if(ls == 1.0)
-            {
-                Real Ke  =  electrochem::Ke_bulk(C, prob_parm) / phi(i,j,k,MAC_ID);
-                Real Ac  = electrochem::A_c(C, prob_parm);
-                Real tplus  = electrochem::t_plus(C, prob_parm);
-                Real efield = phi(cellid,EFX_ID+dir);
-            
-                //species flux Ne = -De grad(c) + t+/F je
-                //je=(-Ke grad(phi) + Kd grad(lnc))
-                //Electric field E = -grad(phi)
-                //Kdstar = Kd/c
-
-                //species flux Ne = -De grad(c) + t+/F (Ke*E + Kdstar grad(c))
-                //species flux Ne = -(De - (t+/F) Kdstar) grad(c) + t+/F Ke*E
-                //conservation equation is dce/dt + del.Ne = 0
-                //substituting..
-                //dce/dt + del.(t+/F Ke E) = del.((De - (t+/F) Kdstar) grad(c))
-                //compare to dce/dt + del. (v C) = del.(Deff grad(c))
-                //v = (t+/F)(Ke/C)E
-                //Deff = (De - (t+/F) Kdstar)
-
-                vel(cellid,CO_ID) = tplus/FARADCONST*Ke/C * efield;
-            } 
         }
     }
 
@@ -322,16 +261,7 @@ namespace electrochem_transport {
 
             kdstar=0.5*(KD_left+KD_right)/Cface;
         }
-
         return(kdstar);
-    }
-    
-    AMREX_GPU_DEVICE AMREX_INLINE
-    Real get_tplus(IntVect cellid,Array4<Real> const& phi,
-                   ProbParm const& prob_parm)
-    {
-        Real tplus=0.0;
-        return(tplus);      
     }
 }
 #endif

@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH --nodes=2           
+#SBATCH --ntasks-per-node=64      
+#SBATCH --time=24:00:00             
+#SBATCH --account=exabatt 
+#SBATCH --job-name=echem
+#SBATCH --output=job_output_filename.%j.out
+#SBATCH --partition=standard
+
+module load PrgEnv-gnu
+srun -n 128 ./*.ex inputs

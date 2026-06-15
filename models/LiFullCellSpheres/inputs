@@ -89,7 +89,7 @@ amr.chk_int  = 10       # number of timesteps between checkpoint files
 
 echemamr.hypre.hypre_solver=GMRES
 echemamr.hypre.hypre_preconditioner=BoomerAMG
-#echemamr.bv_relaxation_factor=1e10 
+echemamr.bv_relaxation_factor=5e4
 
 echemamr.hypre.bamg_verbose = 0
 echemamr.hypre.bamg_coarsen_type = 9

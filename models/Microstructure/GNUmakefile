@@ -20,6 +20,6 @@ TINY_PROFILE = TRUE
 Bpack   := ./Make.package 
 Blocs   := . 
 
-HYPRE_DIR=../../hypre/src/hypre/
+HYPRE_DIR?=../../hypre/src/hypre/
 
-include ../Make.echemAMR
+include ${ECHEM_DIR}/Make.echemAMR

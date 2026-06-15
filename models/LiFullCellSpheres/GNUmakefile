@@ -22,4 +22,4 @@ Blocs   := .
 
 HYPRE_DIR?=../../hypre/src/hypre/
 
-include ${ECHEM_DIR}/models/Make.echemAMR
+include ${ECHEM_DIR}/Make.echemAMR
