@@ -58,4 +58,4 @@ To cite echemAMR, use our computer physics communications paper:
 
 # Acknowledgments
 
-This work was authored by the National Laboratory of The Rockies (NLR) under software record SWR-23-111, operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE Laboratory Directed Research and Development (LDRD). The research was performed using computational resources sponsored by the Department of Energy's Office of Energy Efficiency and Renewable Energy and located at the National Renewable Energy Laboratory. 
+This work was authored by the National Laboratory of The Rockies (NLR) under software record SWR-23-111, operated by Alliance for Energy Innovation, LLC, for the U.S. Department of Energy (DOE) under Contract No. DE-AC36-08GO28308. This work was supported by funding from DOE Laboratory Directed Research and Development (LDRD). The research was performed using computational resources sponsored by the Department of Energy's Office of Critical Minerals and Energy Innovation and located at the National Laboratory of The Rockies. 
